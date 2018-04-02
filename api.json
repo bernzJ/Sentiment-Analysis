@@ -1,0 +1,15 @@
+[
+    {
+        "url": "https://community-sentiment.p.mashape.com/text/",
+        "name": "mashape",
+        "method": "POST",
+        "headers": {
+            "X-Mashape-Key": "yourkeyhere",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept": "application/json"
+        },
+        "json_data": {
+            "txt": "data_string"
+        }
+    }
+]
