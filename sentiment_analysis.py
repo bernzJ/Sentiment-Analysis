@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 import asyncio
 import async_timeout
@@ -11,12 +10,6 @@ from pymongo import MongoClient
 from time import sleep
 
 
-async def save_database(data_json):
-    client = MongoClient()
-    db = client.reddit_mind
-    db.post.insert_one(data_json)
-
-
 async def queue_analyze_data(session, results, apis):
     for sub_reddit in results:
         for post_comments in sub_reddit:
@@ -26,7 +19,7 @@ async def queue_analyze_data(session, results, apis):
                     if [data for data in data_api if "Error" in data]:
                         continue
                     post_comments["analyzes"] = data_api
-                await save_database(post_comments)
+                await helpers.save_database(post_comments)
 
 
 async def analyze_data(session, data_string, apis):

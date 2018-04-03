@@ -8,6 +8,7 @@ import json
 import re
 import pymongo
 import logging
+from pymongo import MongoClient
 
 
 logging.basicConfig(filename="app.log", level=logging.INFO)
@@ -79,7 +80,19 @@ def is_json(data):
         return data
 
 
-# return fields containing the keywords
+def save_database(data_json):
+    """Return mongodb inserted data information.
+    Check if db and collection exist, if not try to insert data into mongo doc, log catch error.
+    """
+    try:
+        client = MongoClient()
+        db = client.reddit_mind.post
+        if data_json["permalink"] not in db.index_information() and "reddit_mind" not in client.database_names():
+            return db.insert_one(data_json)
+    except Exception as e:
+        logging.error("Error: {}\nArgs: {}".format(str(e), e.args))
+
+
 def has_keyword(list_post, fields, keywords):
     """Return list
     Search list childs for a dict containing a specific keyword.
