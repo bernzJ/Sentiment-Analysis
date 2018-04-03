@@ -12,14 +12,16 @@ from time import sleep
 
 async def queue_analyze_data(session, results, apis):
     for sub_reddit in results:
-        for post_comments in sub_reddit:
+        for post_comment in sub_reddit:
+            if helpers.exist_key_database(post_comment["_id"]):
+                return
             for _try in range(0, 10):
-                for field in post_comments["fields"]:
-                    data_api = await analyze_data(session, post_comments[field], apis)
+                for field in post_comment["fields"]:
+                    data_api = await analyze_data(session, post_comment[field], apis)
                     if [data for data in data_api if "Error" in data]:
                         continue
-                    post_comments["analyzes"] = data_api
-                await helpers.save_database(post_comments)
+                    post_comment["analyzes"] = data_api
+                helpers.save_database(post_comment)
 
 
 async def analyze_data(session, data_string, apis):
@@ -28,7 +30,6 @@ async def analyze_data(session, data_string, apis):
         if "json_data" in api and "data_string" in api["json_data"]:
             api["json_data"]["data_string"] = data_string
         analyzed.append({"api": api["name"], "data": helpers.is_json(await helpers.fetch(session, api["url"], api["method"], api["json_data"], **api["headers"]))})
-    print("[**] Analyze api data: {}".format(analyzed))
     return analyzed
 
 
@@ -42,7 +43,6 @@ async def scrap_comments(session, subreddit, apis, keywords):
             return []
         json_dict = json.loads(reddit_api_response)
 
-        print("[**] scrapped comments ..")
         results = []
         for data in json_dict:
             for children in data["data"]["children"]:
@@ -52,6 +52,7 @@ async def scrap_comments(session, subreddit, apis, keywords):
                     saved_data = {}
                     for field in fields:
                         saved_data[field] = children["data"][field]
+                    saved_data["_id"] = children["data"]["id"]
                     saved_data["permalink"] = children["data"]["permalink"]
                     saved_data["ups"] = children["data"]["ups"]
                     saved_data["downs"] = children["data"]["downs"]
@@ -86,15 +87,12 @@ async def queue():
         apis = json.loads(helpers.open_save_file("./api.json", "r"))
         keywords = json.loads(helpers.open_save_file("./keyword.json", "r"))
 
-        print("[**] Init ..")
         while True:
             if not matches:
                 matches = await get_new_subs(session, last_id)
                 if matches == "Out of data !":
-                    print("[***] Out of matches, stopping ..")
                     return
                 last_id = matches[len(matches) - 1]
-                print("[**] Got new matches ..")
             while matches:
                 match = matches.pop()
                 task = asyncio.ensure_future(
