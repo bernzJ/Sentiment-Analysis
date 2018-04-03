@@ -80,15 +80,41 @@ def is_json(data):
         return data
 
 
-def save_database(data_json):
-    """Return mongodb inserted data information.
-    Check if db and collection exist, if not try to insert data into mongo doc, log catch error.
+def mongo_client():
+    """Return mongo_client object.
+    Load mongo config: username, password, authSource, host
+    """
+    mongo_settings = json.loads(open_save_file("./mongo.json", "r"))
+    if type(mongo_settings) is dict:
+        return MongoClient(mongo_settings["host"], username=mongo_settings["username"],
+                           password=mongo_settings["password"], authSource=mongo_settings["authSource"])
+    return MongoClient()
+
+
+def exist_key_database(key_name, client=None):
+    """Return bool
+    Check if key exists as index in db.
     """
     try:
-        client = MongoClient()
+        if not client:
+            client = mongo_client()
         db = client.reddit_mind.post
-        if data_json["permalink"] not in db.index_information() and "reddit_mind" not in client.database_names():
-            return db.insert_one(data_json)
+        if key_name in db.index_information():
+            return True
+        else:
+            return False
+    except Exception as e:
+        logging.error("Error: {}\nArgs: {}".format(str(e), e.args))
+
+
+def save_database(data_json):
+    """Return mongodb inserted data information.
+    Try to insert data into mongo doc, log catch error.
+    """
+    try:
+        client = mongo_client()
+        db = client.reddit_mind.post
+        return db.insert_one(data_json)
     except Exception as e:
         logging.error("Error: {}\nArgs: {}".format(str(e), e.args))
 
