@@ -27,8 +27,9 @@ async def queue_analyze_data(session, results, apis):
 async def analyze_data(session, data_string, apis):
     analyzed = []
     for api in apis:
-        if "json_data" in api and "data_string" in api["json_data"]:
-            api["json_data"]["data_string"] = data_string
+        for k, v in api["json_data"].items():
+            if v == "data_string":
+                api["json_data"][k] = data_string
         analyzed.append({"api": api["name"], "data": helpers.is_json(await helpers.fetch(session, api["url"], api["method"], api["json_data"], **api["headers"]))})
     return analyzed
 
@@ -81,7 +82,8 @@ async def get_new_subs(session, after=None):
 async def queue():
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
 
-        matches = ["/r/eos/comments/89bdad/what_if_i_registered_my_eos_but_then_decided_to/"]
+        matches = [
+            "/r/eos/comments/89bdad/what_if_i_registered_my_eos_but_then_decided_to/"]
         tasks = []
         last_id = None
         apis = json.loads(helpers.open_save_file("./api.json", "r"))
