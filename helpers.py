@@ -47,7 +47,7 @@ async def fetch(session, url, method="GET", postdata="",  **headers):
     try:
         if headers is None:
             headers = {}
-        headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:51.0) Gecko/20100101 Firefox/51.0"
+        headers["User-Agent"] = "Private Scrapper: github.com/bernzJ/sentiment_analysis"
         headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
         headers["Accept-Language"] = "en-US,en;q=0.5"
         with async_timeout.timeout(30):
