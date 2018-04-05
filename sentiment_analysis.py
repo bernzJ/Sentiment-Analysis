@@ -82,8 +82,7 @@ async def get_new_subs(session, after=None):
 async def queue():
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
 
-        matches = [
-            "/r/eos/comments/89bdad/what_if_i_registered_my_eos_but_then_decided_to/"]
+        matches = []
         tasks = []
         last_id = None
         apis = json.loads(helpers.open_save_file("./api.json", "r"))
