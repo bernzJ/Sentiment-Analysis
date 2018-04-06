@@ -15,12 +15,13 @@ async def queue_analyze_data(session, results, apis):
         for post_comment in sub_reddit:
             if helpers.exist_key_database(post_comment["_id"]):
                 return
+            post_comment["analyzes"] = []
             for _try in range(0, 10):
                 for field in post_comment["fields"]:
                     data_api = await analyze_data(session, post_comment[field], apis)
                     if [data for data in data_api if "Error" in data]:
                         continue
-                    post_comment["analyzes"] = data_api
+                    post_comment["analyzes"].append(data_api)
                 helpers.save_database(post_comment)
 
 
